@@ -5,11 +5,15 @@ const longVideoSchema = new mongoose.Schema(
     title: { type: String, required: true },
     description: { type: String },
     category: { type: String },
-    coverUrls: [String],
+    coverUrls: [
+      {
+        url: { type: String, required: true },
+        publicId: { type: String, required: true }
+      }
+    ],
     price: { type: Number, default: 0 },
-    discount: { type: Number, default: 0 }, // ✅ add discount
-    sizes: [{ type: String }],              // ✅ add sizes
-    publicId: { type: String },             // useful for Cloudinary
+    discount: { type: Number, default: 0 },
+    sizes: [{ type: String }],
   },
   { timestamps: true }
 );
