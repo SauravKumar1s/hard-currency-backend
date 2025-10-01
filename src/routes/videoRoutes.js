@@ -75,6 +75,10 @@ router.get("/list-long", async (req, res) => {
  * PUT /api/videos/longs/:id
  * Update title, category, price, discount, sizes, covers
  */
+/**
+ * PUT /api/videos/longs/:id
+ * Update title, category, price, discount, sizes, covers
+ */
 router.put("/longs/:id", upload.array("covers"), async (req, res) => {
   try {
     const { id } = req.params;
@@ -87,8 +91,21 @@ router.put("/longs/:id", upload.array("covers"), async (req, res) => {
       parsedSizes = Array.isArray(sizes) ? sizes : [sizes];
     }
 
+    // Parse existingCovers - handle both string and object formats
+    let parsedExistingCovers = [];
+    if (existingCovers) {
+      try {
+        parsedExistingCovers = typeof existingCovers === 'string' 
+          ? JSON.parse(existingCovers) 
+          : existingCovers;
+      } catch (err) {
+        console.error("Error parsing existingCovers:", err);
+        parsedExistingCovers = [];
+      }
+    }
+
     // Start with existing covers from frontend
-    let coverUrls = existingCovers ? JSON.parse(existingCovers) : [];
+    let coverUrls = [...parsedExistingCovers];
 
     // Add newly uploaded files
     if (req.files && req.files.length > 0) {
@@ -97,14 +114,26 @@ router.put("/longs/:id", upload.array("covers"), async (req, res) => {
           folder: "longs/covers",
           resource_type: "image",
         });
-        coverUrls.push(result.secure_url);
+        // Push as object to match your schema
+        coverUrls.push({
+          url: result.secure_url,
+          publicId: result.public_id,
+        });
         fs.unlinkSync(file.path);
       }
     }
 
     const updatedVideo = await longVideoSchema.findByIdAndUpdate(
       id,
-      { title, description, category, price, discount, sizes: parsedSizes, coverUrls },
+      { 
+        title, 
+        description, 
+        category, 
+        price, 
+        discount, 
+        sizes: parsedSizes, 
+        coverUrls 
+      },
       { new: true }
     );
 
