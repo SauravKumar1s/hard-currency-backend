@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 
 import videoRoutes from "./src/routes/videoRoutes.js";
 import productsRoutes from "./src/routes/productsAttachVideo.js";
+import mediaRoutes from "./src/routes/mediaRoute.js";
+import galleryRoutes from "./src/routes/galleryRoutes.js";
 
 dotenv.config();
 
@@ -33,6 +35,8 @@ if (process.env.MONGO_URI) {
 
 // Routes
 app.use("/api/videos", videoRoutes);
+app.use("/api/media", mediaRoutes);
+app.use("/api/gallery", galleryRoutes);
 app.use("/api/products", productsRoutes);
 
 const PORT = process.env.PORT || 5000;
