@@ -8,6 +8,7 @@ import videoRoutes from "./src/routes/videoRoutes.js";
 import productsRoutes from "./src/routes/productsAttachVideo.js";
 import mediaRoutes from "./src/routes/mediaRoute.js";
 import galleryRoutes from "./src/routes/galleryRoutes.js";
+import promoCodeRoutes from "./src/routes/promoCodeRoutes.js";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 
@@ -242,6 +243,8 @@ app.use("/api/videos", videoRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/products", productsRoutes);
+app.use("/api/promo", promoCodeRoutes );
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
