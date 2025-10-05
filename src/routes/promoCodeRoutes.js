@@ -52,4 +52,17 @@ router.post("/apply", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/promocode/list
+ * Admin fetches all promo codes
+ */
+router.get("/list", async (req, res) => {
+  try {
+    const promos = await PromoCode.find().sort({ createdAt: -1 });
+    res.json({ success: true, promos });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Failed to fetch promo codes" });
+  }
+});
+
 export default router;
