@@ -65,4 +65,48 @@ router.get("/list", async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/promocode/:id
+ * Admin deletes a promo code
+ */
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const promo = await PromoCode.findByIdAndDelete(id);
+
+    if (!promo) {
+      return res.status(404).json({ success: false, message: "Promo code not found" });
+    }
+
+    res.json({ success: true, message: "Promo code deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Failed to delete promo code" });
+  }
+});
+
+/**
+ * PUT /api/promocode/:id
+ * Admin updates a promo code
+ */
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { code, discount, expiryDate, isActive } = req.body;
+
+    const promo = await PromoCode.findByIdAndUpdate(
+      id,
+      { code, discount, expiryDate, isActive },
+      { new: true, runValidators: true }
+    );
+
+    if (!promo) {
+      return res.status(404).json({ success: false, message: "Promo code not found" });
+    }
+
+    res.json({ success: true, message: "Promo code updated successfully", promo });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Failed to update promo code" });
+  }
+});
+
 export default router;
