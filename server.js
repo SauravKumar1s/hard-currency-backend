@@ -9,6 +9,7 @@ import productsRoutes from "./src/routes/productsAttachVideo.js";
 import mediaRoutes from "./src/routes/mediaRoute.js";
 import galleryRoutes from "./src/routes/galleryRoutes.js";
 import promoCodeRoutes from "./src/routes/promoCodeRoutes.js";
+import orderRoutes from "./src/routes/orderRoutes.js";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 
@@ -239,6 +240,7 @@ app.get('/api/paypal-client-id', (req, res) => {
 });
 
 // Routes
+app.use('/api/orders', orderRoutes);
 app.use("/api/videos", videoRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/gallery", galleryRoutes);
