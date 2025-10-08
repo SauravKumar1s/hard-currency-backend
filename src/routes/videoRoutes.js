@@ -6,7 +6,7 @@ import longVideoSchema from "../models/longVideoSchema.js";
 
 const router = express.Router();
 
-// temp // temp disk storage
+// temp disk storage
 const upload = multer({ dest: "uploads/" });
 
 /**
@@ -15,7 +15,17 @@ const upload = multer({ dest: "uploads/" });
  */
 router.post("/upload-long", upload.array("cover"), async (req, res) => {
   try {
-    const { title, category, description, price, discount, sizes } = req.body;
+    const { 
+      title, 
+      category, 
+      description, 
+      price, 
+      discount, 
+      sizes,
+      sizefit,        // ✅ Added
+      materialcare,   // ✅ Added
+      productdetails  // ✅ Added
+    } = req.body;
 
     const coverUrls = [];
     if (req.files && req.files.length > 0) {
@@ -26,7 +36,7 @@ router.post("/upload-long", upload.array("cover"), async (req, res) => {
         });
         coverUrls.push({
           url: result.secure_url,
-          publicId: result.public_id, // ✅ save publicId for later removal
+          publicId: result.public_id,
         });
         fs.unlinkSync(file.path);
       }
@@ -48,6 +58,9 @@ router.post("/upload-long", upload.array("cover"), async (req, res) => {
       price: price || 0,
       discount: discount || 0,
       sizes: parsedSizes,
+      sizefit: sizefit || "",        // ✅ Added
+      materialcare: materialcare || "", // ✅ Added
+      productdetails: productdetails || "", // ✅ Added
       coverUrls,
     });
 
@@ -75,14 +88,21 @@ router.get("/list-long", async (req, res) => {
  * PUT /api/videos/longs/:id
  * Update title, category, price, discount, sizes, covers
  */
-/**
- * PUT /api/videos/longs/:id
- * Update title, category, price, discount, sizes, covers
- */
 router.put("/longs/:id", upload.array("covers"), async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, category, price, discount, sizes, existingCovers } = req.body;
+    const { 
+      title, 
+      description, 
+      category, 
+      price, 
+      discount, 
+      sizes, 
+      existingCovers,
+      sizefit,        // ✅ Added
+      materialcare,   // ✅ Added
+      productdetails  // ✅ Added
+    } = req.body;
 
     let parsedSizes = [];
     try {
@@ -114,7 +134,6 @@ router.put("/longs/:id", upload.array("covers"), async (req, res) => {
           folder: "longs/covers",
           resource_type: "image",
         });
-        // Push as object to match your schema
         coverUrls.push({
           url: result.secure_url,
           publicId: result.public_id,
@@ -132,6 +151,9 @@ router.put("/longs/:id", upload.array("covers"), async (req, res) => {
         price, 
         discount, 
         sizes: parsedSizes, 
+        sizefit: sizefit || "",        // ✅ Added
+        materialcare: materialcare || "", // ✅ Added
+        productdetails: productdetails || "", // ✅ Added
         coverUrls 
       },
       { new: true }
@@ -146,7 +168,6 @@ router.put("/longs/:id", upload.array("covers"), async (req, res) => {
     res.status(500).json({ success: false, error: "Update failed" });
   }
 });
-
 
 /**
  * DELETE /api/videos/longs/:id
