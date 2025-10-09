@@ -72,13 +72,32 @@ const User = mongoose.model('User', userSchema);
 let otpStore = {};
 
 // Nodemailer setup
+// Updated Nodemailer setup with better error handling
+// Nodemailer setup with explicit settings
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // true for 465, false for other ports
   auth: {
-    user: process.env.EMAIL_USER, // set in .env
-    pass: process.env.EMAIL_PASS, // Gmail App Password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
+  requireTLS: true,
 });
+
+// Verify connection
+transporter.verify((error, success) => {
+  if (error) {
+    console.log('Email configuration error:', {
+      user: process.env.EMAIL_USER,
+      passLength: process.env.EMAIL_PASS?.length,
+      error: error.message
+    });
+  } else {
+    console.log('Email server is ready to send messages');
+  }
+});
+
 
 // 📌 Register with Email, Name, Password + Send OTP
 app.post("/api/auth/register", async (req, res) => {
