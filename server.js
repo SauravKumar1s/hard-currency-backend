@@ -30,12 +30,34 @@ app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
 // MongoDB
-if (process.env.MONGO_URI) {
-  mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB connected"))
-    .catch((e) => console.error("MongoDB error:", e.message));
-}
+// if (process.env.MONGO_URI) {
+//   mongoose
+//     .connect(process.env.MONGO_URI)
+//     .then(() => console.log("MongoDB connected"))
+//     .catch((e) => console.error("MongoDB error:", e.message));
+// }
+
+
+const startServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+    });
+
+    console.log("✅ MongoDB connected to:", mongoose.connection.name);
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+
+  } catch (error) {
+    console.error("❌ MongoDB connection failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
+
 
 // User Schema
 const userSchema = new mongoose.Schema({
