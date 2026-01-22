@@ -17,6 +17,7 @@ import jwt from "jsonwebtoken";
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // CORS
 app.use(
@@ -29,37 +30,23 @@ app.use(
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
+// Debug the MongoDB URI
 console.log("MONGO_URI FROM ENV:", process.env.MONGO_URI);
 
-// MongoDB
-// if (process.env.MONGO_URI) {
-//   mongoose
-//     .connect(process.env.MONGO_URI)
-//     .then(() => console.log("MongoDB connected"))
-//     .catch((e) => console.error("MongoDB error:", e.message));
-// }
+// Clean up the MongoDB URI if needed
+let mongoURI = process.env.MONGO_URI;
 
+// Remove "MONGO_URI=" prefix if it exists (common issue in Render)
+if (mongoURI && mongoURI.startsWith('MONGO_URI=')) {
+  mongoURI = mongoURI.replace('MONGO_URI=', '');
+  console.log("Cleaned MONGO_URI:", mongoURI);
+}
 
-const startServer = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 10000,
-    });
-
-    console.log("✅ MongoDB connected to:", mongoose.connection.name);
-
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-
-  } catch (error) {
-    console.error("❌ MongoDB connection failed:", error.message);
-    process.exit(1);
-  }
-};
-
-startServer();
-
+// Also handle if it's empty or undefined
+if (!mongoURI) {
+  console.error("❌ MONGO_URI is not defined in environment variables");
+  process.exit(1);
+}
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -95,8 +82,6 @@ const User = mongoose.model('User', userSchema);
 // Temporary OTP Store (better: store in DB/Redis)
 let otpStore = {};
 
-// Nodemailer setup
-// Updated Nodemailer setup with better error handling
 // Nodemailer setup with explicit settings
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -121,7 +106,6 @@ transporter.verify((error, success) => {
     console.log('Email server is ready to send messages');
   }
 });
-
 
 // 📌 Register with Email, Name, Password + Send OTP
 app.post("/api/auth/register", async (req, res) => {
@@ -498,7 +482,41 @@ app.use("/api/gallery", galleryRoutes);
 app.use("/api/products", productsRoutes);
 app.use("/api/promo", promoCodeRoutes);
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Single server startup function
+const startServer = async () => {
+  try {
+    console.log("🔄 Connecting to MongoDB...");
+    
+    // Add better error handling for connection
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+    });
+
+    console.log("✅ MongoDB connected successfully");
+    console.log("📊 Database:", mongoose.connection.name);
+    console.log("🌐 Host:", mongoose.connection.host);
+
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🔗 http://localhost:${PORT}`);
+    });
+
+  } catch (error) {
+    console.error("❌ MongoDB connection failed:", error.message);
+    
+    // More detailed error information
+    if (error.name === 'MongoParseError') {
+      console.error("📛 Connection string format error. Check your MONGO_URI.");
+      console.error("💡 It should start with: mongodb:// or mongodb+srv://");
+    }
+    
+    process.exit(1); // Exit with failure
+  }
+};
+
+// Start the server
+startServer();
